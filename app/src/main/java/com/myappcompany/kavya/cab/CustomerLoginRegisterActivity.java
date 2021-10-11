@@ -1,12 +1,21 @@
 package com.myappcompany.kavya.cab;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class CustomerLoginRegisterActivity extends AppCompatActivity {
 
@@ -16,11 +25,16 @@ public class CustomerLoginRegisterActivity extends AppCompatActivity {
     private TextView CustomerStatus;
     private EditText EmailCustomer;
     private EditText PasswordCustomer;
+    private ProgressDialog loadingBar;
+    private FirebaseAuth mAuth;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_login_register);
+
+        mAuth = FirebaseAuth.getInstance();
 
         CustomerLoginButton = (Button) findViewById(R.id.customer_login_btn);
         CustomerRegisterButton = (Button) findViewById(R.id.customer_register_btn);
@@ -28,6 +42,8 @@ public class CustomerLoginRegisterActivity extends AppCompatActivity {
         CustomerStatus = (TextView) findViewById(R.id.customer_status);
         EmailCustomer = (EditText) findViewById(R.id.email_customer);
         PasswordCustomer = (EditText) findViewById(R.id.password_customer);
+        loadingBar = new ProgressDialog(this);
+
 
         CustomerRegisterButton.setVisibility(View.INVISIBLE);
         CustomerRegisterButton.setEnabled(false);
@@ -38,11 +54,54 @@ public class CustomerLoginRegisterActivity extends AppCompatActivity {
             {
                 CustomerLoginButton.setVisibility(View.INVISIBLE);
                 CustomerRegisterLink.setVisibility(view.INVISIBLE);
-                CustomerStatus.setText("Register Customer");
+                CustomerStatus.setText("REGISTER CUSTOMER");
 
                 CustomerRegisterButton.setVisibility(View.VISIBLE);
                 CustomerRegisterButton.setEnabled(true);
             }
         });
+
+        CustomerRegisterButton.setOnClickListener(new View.OnClickListener() { // authentication
+            @Override
+            public void onClick(View view) {
+                String email = EmailCustomer.getText().toString();
+                String password = PasswordCustomer.getText().toString();
+
+                RegisterCustomer(email, password);
+            }
+        });
+    }
+
+    private void RegisterCustomer(String email, String password) {
+        if(TextUtils.isEmpty(email))
+        {
+            Toast.makeText(CustomerLoginRegisterActivity.this, "Please write Email..", Toast.LENGTH_SHORT).show();
+        }
+        if(TextUtils.isEmpty(password))
+        {
+            Toast.makeText(CustomerLoginRegisterActivity.this, "Please write Password..", Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            loadingBar.setTitle("Customer Registration");
+            loadingBar.setMessage("Please wait, while we register your data..");
+            mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>()
+            {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task)
+                {
+                    if(task.isSuccessful())
+                    {
+                        Toast.makeText(CustomerLoginRegisterActivity.this, "Customer Register Successfully..", Toast.LENGTH_SHORT).show();
+                        loadingBar.dismiss();
+                    }
+                    else
+                    {
+                        Toast.makeText(CustomerLoginRegisterActivity.this, "Registration Unsuccessful, Please try again", Toast.LENGTH_SHORT).show();
+                        loadingBar.dismiss();
+                    }
+                }
+            });
+        }
     }
 }

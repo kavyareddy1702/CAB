@@ -52,7 +52,7 @@ public class DriverLoginRegisterActivity extends AppCompatActivity {
             public void onClick(View view) {
                 DriverLoginButton.setVisibility(View.INVISIBLE);
                 DriverRegisterLink.setVisibility(view.INVISIBLE);
-                DriverStatus.setText("Register Driver");
+                DriverStatus.setText("REGISTER DRIVER");
 
                 DriverRegisterButton.setVisibility(View.VISIBLE);
                 DriverRegisterButton.setEnabled(true);
@@ -68,9 +68,54 @@ public class DriverLoginRegisterActivity extends AppCompatActivity {
                 RegisterDriver(email, password);
             }
         });
+
+        DriverLoginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String email = EmailDriver.getText().toString();
+                String password = PasswordDriver.getText().toString();
+
+                SignInDriver(email, password);
+            }
+        });
     }
 
-        private void RegisterDriver(String email, String password)
+    private void SignInDriver(String email, String password) {
+        if(TextUtils.isEmpty(email))
+        {
+            Toast.makeText(DriverLoginRegisterActivity.this, "Please write Email..", Toast.LENGTH_SHORT).show();
+        }
+        if(TextUtils.isEmpty(password))
+        {
+            Toast.makeText(DriverLoginRegisterActivity.this, "Please write Password..", Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            loadingBar.setTitle("Driver Login");
+            loadingBar.setMessage("Please wait, while we are checking your credentials..");
+            loadingBar.show();
+            mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>()
+            {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task)
+                {
+                    if(task.isSuccessful())
+                    {
+                        Toast.makeText(DriverLoginRegisterActivity.this, "Driver Logged In Successfully..", Toast.LENGTH_SHORT).show();
+                        loadingBar.dismiss();
+                    }
+                    else
+                    {
+                        Toast.makeText(DriverLoginRegisterActivity.this, "Login Unsuccessful, Please try again", Toast.LENGTH_SHORT).show();
+                        loadingBar.dismiss();
+                    }
+                }
+            });
+        }
+    }
+
+
+    private void RegisterDriver(String email, String password)
         {
             if(TextUtils.isEmpty(email))
             {
@@ -84,6 +129,8 @@ public class DriverLoginRegisterActivity extends AppCompatActivity {
             {
                 loadingBar.setTitle("Driver Registration");
                 loadingBar.setMessage("Please wait, while we register your data..");
+                loadingBar.show();
+
                 mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>()
                 {
                     @Override
@@ -103,5 +150,4 @@ public class DriverLoginRegisterActivity extends AppCompatActivity {
                 });
             }
         }
-
 }
